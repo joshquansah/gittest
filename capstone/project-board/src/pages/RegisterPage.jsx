@@ -71,7 +71,7 @@ export default function RegisterPage() {
     <div className="login-page">
       <form className="login-form" onSubmit={handleSubmit} noValidate>
         <h1>Create account</h1>
-        <p className="login-subtitle">Register a new team member</p>
+        <p className="login-subtitle">Register a new team member account</p>
         {apiError && <p className="error">{apiError}</p>}
         {successName && <p style={{ color: "green", marginBottom: 12 }}>Account created for {successName}</p>}
 

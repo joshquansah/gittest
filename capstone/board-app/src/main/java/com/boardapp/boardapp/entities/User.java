@@ -13,11 +13,22 @@ public class User {
     private String username;
     private String email;
     private String password;
-    private String team_id;
-    private String role;
 
+    private String role;
+    @ManyToOne
+    @JoinColumn(name = "team_id")
+    private Team team;
 
     public User() {
+    }
+
+    public User(Long id, String username, String email, String password, String team_id, String role, Team team) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.team = team;
     }
 
     public User(Long id, String username, String email, String password, String team_id, String role) {
@@ -25,16 +36,11 @@ public class User {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.team_id = team_id;
+
         this.role = role;
     }
 
-    public User(String username, String email, String team_id, String role) {
-        this.username = username;
-        this.email = email;
-        this.team_id = team_id;
-        this.role = role;
-    }
+
 
     public Long getId() {
         return id;
@@ -60,13 +66,7 @@ public class User {
         this.email = email;
     }
 
-    public String getTeam_id() {
-        return team_id;
-    }
 
-    public void setTeam_id(String team_id) {
-        this.team_id = team_id;
-    }
 
     public String getRole() {
         return role;
@@ -84,15 +84,23 @@ public class User {
         this.password = password;
     }
 
+    public Team getTeam() {
+        return team;
+    }
+
+    public void setTeam(Team team) {
+        this.team = team;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(username, user.username) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(team_id, user.team_id) && Objects.equals(role, user.role);
+        return Objects.equals(id, user.id) && Objects.equals(username, user.username) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(role, user.role) && Objects.equals(team, user.team);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, email, password, team_id, role);
+        return Objects.hash(id, username, email, password, role, team);
     }
 }
