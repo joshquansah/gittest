@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback } from "react";
 import { AUTH_BASE_URL } from "../config";
 import { request } from "../api";

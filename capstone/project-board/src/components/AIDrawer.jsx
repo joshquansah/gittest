@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AI_BASE_URL } from "../config";
 import { request } from "../api";
 
-export default function AIDrawer({ open, onClose, onTasksCreated }) {
+export default function AIDrawer({ open, onClose, onProjectCreated }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [created, setCreated] = useState(null);
@@ -25,8 +25,9 @@ export default function AIDrawer({ open, onClose, onTasksCreated }) {
     setError("");
     try {
       const data = await request("POST", `${AI_BASE_URL}/ai/parse`, { input });
-      setCreated(data.created);
-      onTasksCreated?.(data.created);
+      const createdProject = data?.createdProject || data?.project || data?.created || data;
+      setCreated(createdProject);
+      onProjectCreated?.(createdProject);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -56,11 +57,11 @@ export default function AIDrawer({ open, onClose, onTasksCreated }) {
 
         {!created ? (
           <form className="drawer-form" onSubmit={handleSubmit}>
-            <h2>Create tasks with AI</h2>
+            <h2>Create projects with AI</h2>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Paste anything. An email, a Slack message, a sentence. The AI will create the tasks."
+              placeholder="Paste anything. An email, a Slack message, a sentence. The AI will create a project with nested tasks."
               rows={12}
             />
             {error && <p className="error">{error}</p>}
@@ -74,9 +75,10 @@ export default function AIDrawer({ open, onClose, onTasksCreated }) {
           </form>
         ) : (
           <div className="confirmation">
-            <h2>Created {created.length} task(s)</h2>
+            <h2>Created project</h2>
+            <p className="confirmation-project-title">{created.title || created.name || "Untitled project"}</p>
             <ul className="confirmation-list">
-              {created.map((t) => (
+              {(created.tasks || []).map((t) => (
                 <li
                   key={t.id}
                   className={t.ownerResolved === false ? "needs-owner" : ""}

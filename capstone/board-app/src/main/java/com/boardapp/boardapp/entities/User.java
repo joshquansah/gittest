@@ -3,13 +3,14 @@ package com.boardapp.boardapp.entities;
 import jakarta.persistence.*;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name="users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     private String username;
     private String email;
     private String password;
@@ -22,7 +23,7 @@ public class User {
     public User() {
     }
 
-    public User(Long id, String username, String email, String password, String team_id, String role, Team team) {
+    public User(UUID id, String username, String email, String password, String team_id, String role, Team team) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -31,7 +32,7 @@ public class User {
         this.team = team;
     }
 
-    public User(Long id, String username, String email, String password, String team_id, String role) {
+    public User(UUID id, String username, String email, String password, String team_id, String role) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -41,13 +42,12 @@ public class User {
     }
 
 
-
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setId(UUID uuid) {
+        this.id = uuid;
     }
 
     public String getUsername() {
@@ -65,7 +65,6 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
-
 
 
     public String getRole() {

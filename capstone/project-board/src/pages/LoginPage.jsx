@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate, Navigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../hooks/useTheme";
 
 export default function LoginPage() {
   const { login, token } = useAuth();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -28,8 +30,14 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
+      <button type="button" className="login-theme-toggle" onClick={toggleTheme}>
+        {theme === "light" ? "Dark mode" : "Light mode"}
+      </button>
+      <div className="login-logo-mark" aria-hidden="true">
+        EC
+      </div>
       <form className="login-form" onSubmit={handleSubmit}>
-        <h1>Project Board</h1>
+        <h1>EverBank Connect</h1>
         <p className="login-subtitle">Sign in to your team board</p>
         {error && <p className="error">{error}</p>}
         <label>
@@ -55,9 +63,9 @@ export default function LoginPage() {
         <button type="submit" className="btn-primary" disabled={loading}>
           {loading ? "Signing in…" : "Sign in"}
         </button>
-        <div style={{ marginTop: 12, textAlign: "center" }}>
+        <div className="login-footer-link">
           <small>
-            Don't have an account? <Link to="/register">Register</Link>
+            Don&apos;t have an account? <Link to="/register">Register</Link>
           </small>
         </div>
       </form>

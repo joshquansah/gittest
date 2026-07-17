@@ -29,6 +29,7 @@ public class AuthController {
     }
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody Map<String, String> registrationData) {
+        String username = registrationData.get("name");
         String email = registrationData.get("email");
         String rawPassword = registrationData.get("password");
         String role = registrationData.get("role");
@@ -42,6 +43,7 @@ public class AuthController {
         }
 
         User newUser = new User();
+        newUser.setUsername(username);
         newUser.setEmail(email);
 
         String encryptedPassword = passwordEncoder.encode(rawPassword);
@@ -69,7 +71,8 @@ public class AuthController {
                 return ResponseEntity.ok(Map.of(
                         "success", true,
                         "message", "Login successful!",
-                        "token", "dummy-jwt-token"
+                        "token", "dummy-jwt-token",
+                        "user", user
                 ));
             }
         }

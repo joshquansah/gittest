@@ -1,4 +1,4 @@
-export default function TaskCard({ task }) {
+export default function TaskCard({ task, onClick, className = "" }) {
   const ownerName =
     task.ownerName || task.owner?.name || task.owner || null;
   const due = task.dueDate
@@ -6,7 +6,12 @@ export default function TaskCard({ task }) {
     : null;
 
   return (
-    <div className="task-card">
+    <div
+      className={`task-card ${className}`.trim()}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       <div className="task-card-header">
         <span className="task-title">{task.title}</span>
         {task.isStale && (
