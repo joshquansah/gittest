@@ -36,7 +36,7 @@ export default function TaskDetailPanel({ task, project, onClose, onUpdate }) {
           <div>
             <p className="detail-eyebrow">Task details</p>
             <h2>{task.title}</h2>
-            <p className="task-detail-project">{project?.title || project?.name || task.projectName || "Project"}</p>
+            <p className="task-detail-project">{project?.title || "Project"}</p>
           </div>
           <button type="button" className="icon-button" onClick={onClose} aria-label="Close task details">
             ×

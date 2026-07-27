@@ -1,10 +1,12 @@
 package com.boardapp.boardapp.services;
 
 import com.boardapp.boardapp.dto.CreateProjectRequest;
+import com.boardapp.boardapp.dto.ProjectDto;
 import com.boardapp.boardapp.entities.Project;
 
 import com.boardapp.boardapp.entities.Team;
 import com.boardapp.boardapp.entities.User;
+import com.boardapp.boardapp.mappers.ProjectMapper;
 import com.boardapp.boardapp.repositories.ProjectRepository;
 import com.boardapp.boardapp.repositories.TeamRepository;
 import com.boardapp.boardapp.repositories.UserRepository;
@@ -18,15 +20,28 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final ProjectMapper projectMapper;
 
 
-    public ProjectService(ProjectRepository projectRepository, UserRepository userRepository, TeamRepository teamRepository) {
+    public ProjectService(ProjectRepository projectRepository, UserRepository userRepository, TeamRepository teamRepository, ProjectMapper projectMapper) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.teamRepository = teamRepository;
+        this.projectMapper = projectMapper;
     }
-    public List<Project> getAllProjects(){return projectRepository.findAll();}
-    public List<Project> getTeamProjects(UUID uuid){return projectRepository.findByTeam_Id(uuid);}
+    public List<ProjectDto> getAllProjects(){
+        List<Project> allProjects = projectRepository.findAll();
+        return projectMapper.toListDto(allProjects);
+    }
+
+    public List<ProjectDto> getTeamProjects(UUID uuid){
+        List<Project> teamProjects = projectRepository.findByTeam_Id(uuid);
+        return projectMapper.toListDto(teamProjects);
+    }
+
+    public ProjectDto getProject(UUID uuid){return projectRepository.findById(uuid)
+            .map(projectMapper::toDto)
+            .orElseThrow(() -> new RuntimeException("Project not found"));}
     public Project insertProject(CreateProjectRequest request) {
         User owner = userRepository.findById(request.ownerId())
                 .orElseThrow(() -> new RuntimeException("Owner not found"));

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
@@ -24,6 +25,12 @@ public class UserController {
     public List<User> getUsers(){
         return userService.getAllUsers();
 
+    }
+    @GetMapping("/team/{teamId}")
+    public List<UserDto> getTeamMembers(
+            @PathVariable UUID teamId
+    ){
+        return userService.getTeamUsers(teamId);
     }
     @PostMapping
     public ResponseEntity<User> addNewUser(

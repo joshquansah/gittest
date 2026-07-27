@@ -1,6 +1,6 @@
 export default function TaskCard({ task, onClick, className = "" }) {
   const ownerName =
-    task.ownerName || task.owner?.name || task.owner || null;
+    task.owner?.name || null;
   const due = task.dueDate
     ? new Date(task.dueDate).toLocaleDateString()
     : null;

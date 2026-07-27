@@ -8,7 +8,6 @@ import AIDrawer from "../components/AIDrawer";
 import ProjectCard from "../components/ProjectCard";
 import { useTheme } from "../hooks/useTheme";
 import {
-  formatLabel,
   getInitials,
   getUserAvatarUrl,
   getUserDepartmentName,
@@ -24,6 +23,12 @@ import {
   summarizeProjects,
   upsertProject,
 } from "../utils/projectData";
+
+const BOARD_VIEWS = [
+  { id: "ALL", label: "All" },
+  { id: "MY", label: "My" },
+  { id: "OVERDUE", label: "Overdue" },
+];
 
 const SIDEBAR_LINKS = [
   { to: "/", label: "Projects" },
@@ -143,13 +148,41 @@ function applyBoardEvent(projects, event) {
   });
 }
 
-function matchesProjectFilters(project, searchTerm, statusFilter, teamFilter) {
-  const normalizedStatus = String(project.status || "").toUpperCase();
-  const teamValue = String(project.teamId ?? project.teamName ?? project.team ?? "").toLowerCase();
-  const selectedTeam = String(teamFilter || "").toLowerCase();
-  const statusMatches = statusFilter === "ALL" || normalizedStatus === statusFilter;
-  const teamMatches = teamFilter === "ALL" || teamValue === selectedTeam || String(project.teamName || "").toLowerCase() === selectedTeam;
-  return statusMatches && teamMatches && projectMatchesSearch(project, searchTerm);
+function isOverdueProject(project) {
+  if (!project?.dueDate) return false;
+  const dueDate = new Date(project.dueDate);
+  if (Number.isNaN(dueDate.getTime())) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  dueDate.setHours(0, 0, 0, 0);
+  return dueDate < today;
+}
+
+function matchesProjectView(project, viewFilter, user) {
+  const normalizedView = String(viewFilter || "ALL").toUpperCase();
+  if (normalizedView === "ALL") return true;
+  if (normalizedView === "OVERDUE") return isOverdueProject(project);
+
+  if (normalizedView === "MY") {
+    const userId = user?.id ?? user?.userId ?? null;
+    const userTeamId = user?.team?.id ?? null;
+    const userTeamName = String(user?.team?.name || "").toLowerCase();
+    const ownerId = project.ownerId ?? project.owner?.id ?? null;
+    const projectTeamId = project.teamId ?? project.team?.id ?? null;
+    const projectTeamName = String(project.teamName || project.team?.name || project.team || "").toLowerCase();
+
+    return (
+      (userId != null && String(ownerId) === String(userId)) ||
+      (userTeamId != null && String(projectTeamId) === String(userTeamId)) ||
+      (userTeamName && projectTeamName === userTeamName)
+    );
+  }
+
+  return true;
+}
+
+function matchesProjectFilters(project, searchTerm, viewFilter, user) {
+  return matchesProjectView(project, viewFilter, user) && projectMatchesSearch(project, searchTerm);
 }
 
 export default function BoardPage() {
@@ -161,8 +194,7 @@ export default function BoardPage() {
   const [error, setError] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [teamFilter, setTeamFilter] = useState("ALL");
+  const [viewFilter, setViewFilter] = useState("ALL");
 
   useEffect(() => {
     let active = true;
@@ -209,21 +241,21 @@ export default function BoardPage() {
   }, [token]);
 
   const filteredProjects = useMemo(
-    () => projects.filter((project) => matchesProjectFilters(project, searchTerm, statusFilter, teamFilter)),
-    [projects, searchTerm, statusFilter, teamFilter],
+    () => projects.filter((project) => matchesProjectFilters(project, searchTerm, viewFilter, user)),
+    [projects, searchTerm, viewFilter, user],
   );
 
   const groupedProjects = useMemo(() => groupProjectsByStatus(filteredProjects), [filteredProjects]);
   const summary = useMemo(() => summarizeProjects(projects), [projects]);
-  const statusOptions = useMemo(
-    () => Array.from(new Set(projects.map((project) => String(project.status || "").toUpperCase()).filter(Boolean))).sort(),
-    [projects],
+  const viewOptions = useMemo(
+    () =>
+      BOARD_VIEWS.map((view) => ({
+        ...view,
+        count: projects.filter((project) => matchesProjectView(project, view.id, user)).length,
+      })),
+    [projects, user],
   );
-  const teamOptions = useMemo(
-    () => Array.from(new Set(projects.map((project) => project.teamName || project.team).filter(Boolean))).sort(),
-    [projects],
-  );
-  const activeFilters = Boolean(searchTerm.trim() || statusFilter !== "ALL" || teamFilter !== "ALL");
+  const activeFilters = Boolean(searchTerm.trim() || viewFilter !== "ALL");
 
   function handleLogout() {
     logout();
@@ -232,8 +264,7 @@ export default function BoardPage() {
 
   function clearFilters() {
     setSearchTerm("");
-    setStatusFilter("ALL");
-    setTeamFilter("ALL");
+    setViewFilter("ALL");
   }
 
   function handleProjectCreated(createdProject) {
@@ -254,50 +285,47 @@ export default function BoardPage() {
             </div>
 
             <div className="board-header-actions">
+              <button type="button" className="btn-primary" onClick={() => setDrawerOpen(true)}>
+                Create project
+              </button>
               <button type="button" className="btn-ghost" onClick={toggleTheme}>
                 {theme === "light" ? "Dark" : "Light"}
               </button>
               <button type="button" className="btn-ghost" onClick={handleLogout}>
                 Logout
               </button>
-              <button type="button" className="btn-primary" onClick={() => setDrawerOpen(true)}>
-                Create project
-              </button>
             </div>
           </div>
 
-          <div className="filter-bar filter-bar-board">
-            <label className="filter-field">
-              <span>Search</span>
-              <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search projects" />
-            </label>
-            <label className="filter-field">
-              <span>Status</span>
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-                <option value="ALL">All</option>
-                {statusOptions.map((status) => (
-                  <option key={status} value={status}>
-                    {formatLabel(status)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="filter-field">
-              <span>Team</span>
-              <select value={teamFilter} onChange={(event) => setTeamFilter(event.target.value)}>
-                <option value="ALL">All</option>
-                {teamOptions.map((team) => (
-                  <option key={team} value={team}>
-                    {team}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {activeFilters && (
-              <button type="button" className="btn-ghost clear-filters" onClick={clearFilters}>
-                Clear filters
-              </button>
-            )}
+          <div className="board-toolbar">
+            <div className="tab-bar board-view-tabs" role="tablist" aria-label="Project views">
+              {viewOptions.map((view) => (
+                <button
+                  key={view.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={viewFilter === view.id}
+                  className={viewFilter === view.id ? "is-active" : ""}
+                  onClick={() => setViewFilter(view.id)}
+                >
+                  <span>{view.label}</span>
+                  <span className="view-count">{view.count}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="board-toolbar-actions">
+              <label className="filter-field board-search-field">
+                <span>Search</span>
+                <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search projects" />
+              </label>
+
+              {activeFilters && (
+                <button type="button" className="btn-ghost clear-filters" onClick={clearFilters}>
+                  Show all
+                </button>
+              )}
+            </div>
           </div>
 
           {error && <p className="board-error">{error}</p>}
@@ -307,7 +335,7 @@ export default function BoardPage() {
           ) : filteredProjects.length === 0 ? (
             <div className="empty-state empty-state-board">
               <h2>No matching projects</h2>
-              <p>{activeFilters ? "Try clearing the filters or search term." : "Create a project to get started."}</p>
+              <p>{activeFilters ? "Try another view or clear the search." : "Create a project to get started."}</p>
             </div>
           ) : (
             <div className="project-status-board">
@@ -333,12 +361,7 @@ export default function BoardPage() {
             <p>Tasks are always scoped to their parent project. Open a project card to work on its tasks.</p>
           </div>
         </main>
-
-        <button type="button" className="fab" onClick={() => setDrawerOpen(true)} aria-label="Create project with AI">
-          +
-        </button>
-
-        <AIDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onProjectCreated={handleProjectCreated} />
+        <AIDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onProjectCreated={handleProjectCreated} user={user} />
       </div>
     </div>
   );

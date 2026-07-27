@@ -1,6 +1,7 @@
 package com.boardapp.boardapp.controllers;
 
 import com.boardapp.boardapp.dto.CreateProjectRequest;
+import com.boardapp.boardapp.dto.ProjectDto;
 import com.boardapp.boardapp.entities.Project;
 import com.boardapp.boardapp.repositories.ProjectRepository;
 import com.boardapp.boardapp.services.ProjectService;
@@ -21,10 +22,15 @@ public class ProjectController {
         this.projectRepository = projectRepository;
     }
     @GetMapping
-    public List<Project> getAllProjects(){
+    public List<ProjectDto> getAllProjects(){
         return projectService.getAllProjects();
     }
-
+    @GetMapping("/{projectId}")
+    public ProjectDto getProject(
+            @PathVariable UUID projectId
+    ){
+        return projectService.getProject(projectId);
+    }
     @PostMapping
     public ResponseEntity<Project> addProject(
             @RequestBody CreateProjectRequest request) {

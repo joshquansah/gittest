@@ -3,7 +3,7 @@ import { formatDate, formatLabel, summarizeProject } from "../utils/projectData"
 
 export default function ProjectCard({ project, onClick }) {
   const summary = summarizeProject(project);
-  const title = project.title || project.name || "Untitled project";
+  const title = project.title || "Untitled project";
 
   function handleKeyDown(event) {
     if (!onClick) return;
@@ -24,7 +24,7 @@ export default function ProjectCard({ project, onClick }) {
       <div className="project-card-header">
         <div>
           <h3>{title}</h3>
-          <p>{project.ownerName || project.owner || "Unassigned"}</p>
+          <p>{project.owner?.username || "Unassigned"}</p>
         </div>
         <span className="status-badge status-project">{formatLabel(project.status)}</span>
       </div>
@@ -32,7 +32,7 @@ export default function ProjectCard({ project, onClick }) {
       <div className="project-card-meta">
         <div>
           <span>Team</span>
-          <strong>{project.teamName || project.team || "—"}</strong>
+          <strong>{project.team?.name || "—"}</strong>
         </div>
         <div>
           <span>Due date</span>

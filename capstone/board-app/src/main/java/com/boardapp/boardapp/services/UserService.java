@@ -1,9 +1,9 @@
 package com.boardapp.boardapp.services;
 
 import com.boardapp.boardapp.dto.UserDto;
-import com.boardapp.boardapp.entities.Project;
 import com.boardapp.boardapp.entities.Team;
 import com.boardapp.boardapp.entities.User;
+import com.boardapp.boardapp.mappers.UserMapper;
 import com.boardapp.boardapp.repositories.TeamRepository;
 import com.boardapp.boardapp.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -19,12 +20,19 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
-    public UserService(UserRepository userRepository, TeamRepository teamRepository) {
+    private final UserMapper userMapper;
+
+    public UserService(UserRepository userRepository, TeamRepository teamRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.teamRepository = teamRepository;
+        this.userMapper = userMapper;
     }
     public List<User> getAllUsers(){
         return userRepository.findAll();
+    }
+    public List<UserDto> getTeamUsers(UUID uuid){
+        List<User> teamUsers = userRepository.findByTeam_Id(uuid);
+        return userMapper.toListDto(teamUsers);
     }
 
     public User insertUser(UserDto request) {

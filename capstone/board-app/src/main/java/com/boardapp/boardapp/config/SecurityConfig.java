@@ -30,7 +30,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/auth/**", "/teams", "/projects", "/tasks/**", "/updates/**").permitAll();
+                    registry.requestMatchers("/auth/**", "/teams", "/projects/**", "/tasks/**", "/updates/**", "/users/**", "/ai/**").permitAll();
                     registry.anyRequest().authenticated();
                 })
                 .build();
@@ -43,7 +43,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
 

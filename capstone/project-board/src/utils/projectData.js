@@ -84,7 +84,7 @@ export function normalizeProject(project = {}) {
     title,
     name: title,
     status: defaultProjectStatus(project),
-    ownerName: project.owner?.name || null,
+    ownerName: project.owner?.username || null,
     ownerId: project.owner?.id ?? null,
     teamName: project.team?.name || null,
     teamId: project.team?.id ?? null,
@@ -142,7 +142,9 @@ export function formatDate(value, includeTime = false) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString(undefined, includeTime ? { dateStyle: "medium", timeStyle: "short" } : { dateStyle: "medium" });
+  return includeTime
+    ? date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
+    : date.toLocaleDateString(undefined, { dateStyle: "medium" });
 }
 
 export function isOverdueTask(task) {

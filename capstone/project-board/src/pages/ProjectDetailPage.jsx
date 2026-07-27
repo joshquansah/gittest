@@ -122,6 +122,7 @@ export default function ProjectDetailPage() {
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
   const [draft, setDraft] = useState(() => emptyDraft());
   const [savingTask, setSavingTask] = useState(false);
+  const [teamMembers, setTeamMembers] = useState([]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -153,6 +154,21 @@ export default function ProjectDetailPage() {
       active = false;
     };
   }, [projectId]);
+
+  useEffect(() => {
+    if (!project?.team?.id) return;
+    
+    async function fetchTeamMembers() {
+      try {
+        const members = await request("GET", `${BOARD_BASE_URL}/users/team/${project.team.id}`);
+        setTeamMembers(members);
+      } catch (err) {
+        console.error("Failed to fetch team members", err);
+      }
+    }
+
+    fetchTeamMembers();
+  }, [project?.team?.id]);
 
   useEffect(() => {
     if (!token || !projectId) return undefined;
@@ -232,6 +248,7 @@ export default function ProjectDetailPage() {
 
   async function handleCreateTask(event) {
     event.preventDefault();
+    
     if (!project) return;
     if (!draft.title.trim()) {
       setError("Please enter a task title.");
@@ -242,14 +259,16 @@ export default function ProjectDetailPage() {
     setError("");
 
     try {
+
       const response = await request("POST", `${BOARD_BASE_URL}/projects/${projectId}/tasks`, {
         title: draft.title.trim(),
         description: draft.description.trim(),
         status: draft.status,
         dueDate: draft.dueDate || undefined,
         priority: draft.priority,
-        owner: draft.owner.trim() || undefined,
+        ownerId:  project?.owner?.id || draft.ownerId,
       });
+      console.log("response", response);
       const createdTask = response?.task || response;
       if (createdTask) {
         setProject((currentProject) => replaceTaskInProject(currentProject, normalizeTask(createdTask, currentProject || project)));
@@ -263,7 +282,7 @@ export default function ProjectDetailPage() {
     }
   }
 
-  const projectTitle = project?.title || project?.name || "Project";
+  const projectTitle = project?.title || "Project";
   const projectStats = summary;
 
   return (
@@ -275,7 +294,7 @@ export default function ProjectDetailPage() {
           <div className="board-title-block">
             <p className="detail-eyebrow">Project detail</p>
             <h1>{projectTitle}</h1>
-            <p>{project?.teamName || project?.team || "Project workspace"}</p>
+            <p>{project?.team?.name || "Project workspace"}</p>
           </div>
           <div className="topbar-actions">
             <Link className="btn-ghost" to="/">
@@ -310,11 +329,11 @@ export default function ProjectDetailPage() {
                   </div>
                   <div className="profile-field">
                     <span>Owner</span>
-                    <strong>{project.ownerName || project.owner || "Unassigned"}</strong>
+                    <strong>{project.owner?.username || "Unassigned"}</strong>
                   </div>
                   <div className="profile-field">
                     <span>Team</span>
-                    <strong>{project.teamName || project.team || "—"}</strong>
+                    <strong>{project.team?.name || "—"}</strong>
                   </div>
                   <div className="profile-field">
                     <span>Due date</span>
@@ -391,12 +410,18 @@ export default function ProjectDetailPage() {
                     </label>
                     <label>
                       Owner
-                      <input
-                        value={draft.owner}
-                        onChange={(event) => setDraft((current) => ({ ...current, owner: event.target.value }))}
-                        placeholder="Optional owner"
-                        disabled={savingTask}
-                      />
+                        <select
+                          value={draft.ownerId}
+                          onChange={(e) => setDraft(curr => ({ ...curr, ownerId: e.target.value }))}
+                          disabled={savingTask}
+                        >
+                          <option value="">Select owner</option>
+                          {teamMembers.map(member => (
+                            <option key={member.id} value={member.id}>
+                              {member.username} {member.id === project?.owner?.id ? "(Default)" : ""}
+                            </option>
+                          ))}
+                        </select>
                     </label>
                     <button type="submit" className="btn-primary" disabled={savingTask || !draft.title.trim()}>
                       {savingTask ? "Creating…" : "Create task"}
