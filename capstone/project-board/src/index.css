@@ -184,8 +184,7 @@ a {
 }
 
 .login-logo-mark {
-  width: 48px;
-  height: 48px;
+  height: 28px;
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -937,6 +936,7 @@ a {
 .project-detail-actions {
   display: flex;
   justify-content: flex-start;
+  gap: 12px;
 }
 
 .add-task-card {
@@ -1013,6 +1013,30 @@ a {
 .confirmation-list li.needs-owner {
   background: rgba(245, 158, 11, 0.1);
   border-left: 3px solid var(--unresolved);
+}
+
+.handoff-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.handoff-form input,
+.handoff-form textarea,
+.handoff-form label {
+  grid-column: span 2;
+}
+
+.handoff-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.handoff-form button {
+  justify-self: start;
 }
 
 .kanban-column {

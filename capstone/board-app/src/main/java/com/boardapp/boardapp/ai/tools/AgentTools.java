@@ -18,10 +18,10 @@ public class AgentTools {
         this.projectMapper = projectMapper;
     }
 
-    @Tool(description = "Creates a new project with only these fields and returns it to the front end for it fill in the fields. Do not guess or provide other fields")
+    @Tool(description = "Creates a new project with only these fields and returns it to the front end for it fill in the fields. Do not guess or provide other fields. The Description field must not exceed 500 characters ")
     public ProjectDto createProjectTool(
             @ToolParam(description = "Title of the project") String title,
-            @ToolParam(description = "Description of the project") String description,
+            @ToolParam(description = "Description or Summary of the project. This should never exceed 500 characters and only highlight key information") String description,
             @ToolParam(description = "The due date of the project") LocalDate dueDate
 
     ){

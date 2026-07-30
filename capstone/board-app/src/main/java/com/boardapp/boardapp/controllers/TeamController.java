@@ -20,7 +20,7 @@ public class TeamController {
     public List<TeamDto> getAll() {
         return teamRepository.findAll()
                 .stream()
-                .map(t -> new TeamDto(t.getId(), t.getDepartment()))
+                .map(t -> new TeamDto(t.getId(), t.getName(), t.getDepartment()))
                 .toList();
     }
 }

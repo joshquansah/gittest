@@ -3,6 +3,7 @@ package com.boardapp.boardapp.controllers;
 import ch.qos.logback.core.net.SMTPAppenderBase;
 import com.boardapp.boardapp.entities.Team;
 import com.boardapp.boardapp.entities.User;
+import com.boardapp.boardapp.enums.Role;
 import com.boardapp.boardapp.repositories.TeamRepository;
 import com.boardapp.boardapp.repositories.UserRepository;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +33,9 @@ public class AuthController {
         String username = registrationData.get("name");
         String email = registrationData.get("email");
         String rawPassword = registrationData.get("password");
-        String role = registrationData.get("role");
+        Role role = Role.valueOf(registrationData.get("role"));
         String teamId = registrationData.get("teamId");
+        String expertise = registrationData.get("expertise");
 
         if (userRepository.findByEmail(email).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -52,6 +54,7 @@ public class AuthController {
         Team team = teamRepository.findById(UUID.fromString(teamId))
                 .orElseThrow(() -> new RuntimeException("Team not found"));
         newUser.setTeam(team);
+        newUser.setExpertise(expertise);
         userRepository.save(newUser);
 
         return ResponseEntity.ok(Map.of(

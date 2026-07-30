@@ -22,7 +22,7 @@ public class Project {
 
     @Column(nullable = false)
     private String title;
-
+    @Column(name = "description", length = 999)
     private String description;
 
     @ManyToOne

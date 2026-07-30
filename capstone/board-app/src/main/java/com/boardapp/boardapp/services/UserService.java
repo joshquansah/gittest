@@ -3,6 +3,7 @@ package com.boardapp.boardapp.services;
 import com.boardapp.boardapp.dto.UserDto;
 import com.boardapp.boardapp.entities.Team;
 import com.boardapp.boardapp.entities.User;
+import com.boardapp.boardapp.enums.Role;
 import com.boardapp.boardapp.mappers.UserMapper;
 import com.boardapp.boardapp.repositories.TeamRepository;
 import com.boardapp.boardapp.repositories.UserRepository;
@@ -27,8 +28,9 @@ public class UserService implements UserDetailsService {
         this.teamRepository = teamRepository;
         this.userMapper = userMapper;
     }
-    public List<User> getAllUsers(){
-        return userRepository.findAll();
+    public List<UserDto> getAllUsers(){
+        List<User> allUsers = userRepository.findAll();
+        return userMapper.toListDto(allUsers);
     }
     public List<UserDto> getTeamUsers(UUID uuid){
         List<User> teamUsers = userRepository.findByTeam_Id(uuid);
@@ -39,7 +41,7 @@ public class UserService implements UserDetailsService {
         User user = new User();
         Team team = teamRepository.findById(request.teamId())
                 .orElseThrow(() -> new RuntimeException("Team not found"));
-        user.setRole(request.role());
+        user.setRole(Role.valueOf(request.role()));
         user.setEmail(request.email());
         user.setTeam(team);
 

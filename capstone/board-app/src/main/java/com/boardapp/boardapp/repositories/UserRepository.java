@@ -1,6 +1,7 @@
 package com.boardapp.boardapp.repositories;
 
 import com.boardapp.boardapp.entities.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,5 +13,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByUsername(String username);
     List<User> findByTeam_Id(UUID uuid);
+    @EntityGraph(attributePaths = {"team", "reports"})
+    List<User> findByManagerIsNull();
 }
 

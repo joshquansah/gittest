@@ -30,7 +30,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/auth/**", "/teams", "/projects/**", "/tasks/**", "/updates/**", "/users/**", "/ai/**").permitAll();
+                    registry.requestMatchers("/auth/**", "/teams", "/projects/**", "/tasks/**", "/updates/**", "/users/**", "/ai/**", "/orgchart/**").permitAll();
                     registry.anyRequest().authenticated();
                 })
                 .build();

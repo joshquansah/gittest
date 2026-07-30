@@ -2,7 +2,6 @@ package com.boardapp.boardapp.controllers;
 
 import com.boardapp.boardapp.dto.UserDto;
 import com.boardapp.boardapp.entities.User;
-import com.boardapp.boardapp.repositories.UserRepository;
 import com.boardapp.boardapp.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,15 +13,15 @@ import java.util.UUID;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-    private final UserRepository userRepository;
 
-    public UserController(UserService userService, UserRepository userRepository) {
+
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userRepository = userRepository;
+
     }
 
     @GetMapping
-    public List<User> getUsers(){
+    public List<UserDto> getUsers(){
         return userService.getAllUsers();
 
     }

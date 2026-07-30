@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Navigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../hooks/useTheme";
-
+import logo from '../assets/connect-logo.png'; 
 export default function LoginPage() {
   const { login, token } = useAuth();
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ export default function LoginPage() {
         {theme === "light" ? "Dark mode" : "Light mode"}
       </button>
       <div className="login-logo-mark" aria-hidden="true">
-        EC
+        <img src={logo} alt="EverBank Connect Logo" width="130" height="130" />
       </div>
       <form className="login-form" onSubmit={handleSubmit}>
         <h1>EverBank Connect</h1>

@@ -68,6 +68,8 @@ public class TaskService {
         if (request.status() != null) task.setStatus(request.status());
         if (request.priority() != null) task.setPriority(request.priority());
         if (request.dueDate() != null) task.setDueDate(request.dueDate());
+        if (request.ownerId() != null) task.setOwner(userRepository.findById(request.ownerId())
+                .orElseThrow(() -> new RuntimeException("User not found")));
         Task saved = taskRepository.save(task);
         Project project = saved.getProject();
         project.setLastActivityAt(LocalDateTime.now());

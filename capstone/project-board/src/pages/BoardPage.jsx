@@ -23,7 +23,7 @@ import {
   summarizeProjects,
   upsertProject,
 } from "../utils/projectData";
-
+import logo from '../assets/connect-logo.png'; 
 const BOARD_VIEWS = [
   { id: "ALL", label: "All" },
   { id: "MY", label: "My" },
@@ -33,7 +33,7 @@ const BOARD_VIEWS = [
 const SIDEBAR_LINKS = [
   { to: "/", label: "Projects" },
   { to: "/rollup", label: "Rollup" },
-  { to: "/admin", label: "Admin" },
+  { to: "/profile", label: "Profile" },
 ];
 
 function Sidebar({ user }) {
@@ -42,7 +42,9 @@ function Sidebar({ user }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <div className="sidebar-logo">EC</div>
+        <div className="sidebar-logo">
+            <img src={logo} alt="EverBank Connect Logo" width="50" height="50"/>
+        </div>
         <div>
           <strong>EverBank Connect</strong>
           <span>Internal delivery space</span>

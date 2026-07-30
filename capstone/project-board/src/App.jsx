@@ -5,7 +5,6 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import BoardPage from "./pages/BoardPage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
-import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
 import RollupPage from "./pages/RollupPage";
 
@@ -37,14 +36,6 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <RollupPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminPage />
               </ProtectedRoute>
             }
           />

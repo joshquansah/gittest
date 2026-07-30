@@ -16,7 +16,7 @@ public class AgentService {
 
     public AgentService(ChatClient.Builder chatClientBuilder, AgentTools agentTools, ProjectMapper projectMapper) {
         this.chatClient = chatClientBuilder
-                .defaultSystem("You are a strict data extraction assistant. Extract fields into the requested JSON schema.")
+                .defaultSystem("You are a strict data extraction assistant. Extract fields into the requested JSON schema. Title must be 10 words or fewer. Description must be 100 characters or fewer. Be concise.")
                 .build();
         this.projectMapper = projectMapper;
     }

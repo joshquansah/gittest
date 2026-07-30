@@ -2,6 +2,7 @@ package com.boardapp.boardapp.services;
 
 import com.boardapp.boardapp.dto.CreateProjectRequest;
 import com.boardapp.boardapp.dto.ProjectDto;
+import com.boardapp.boardapp.dto.UpdateProjectRequest;
 import com.boardapp.boardapp.entities.Project;
 
 import com.boardapp.boardapp.entities.Team;
@@ -21,13 +22,15 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final ProjectMapper projectMapper;
+    private final UpdateService updateService;
 
 
-    public ProjectService(ProjectRepository projectRepository, UserRepository userRepository, TeamRepository teamRepository, ProjectMapper projectMapper) {
+    public ProjectService(ProjectRepository projectRepository, UserRepository userRepository, TeamRepository teamRepository, ProjectMapper projectMapper, UpdateService updateService) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.teamRepository = teamRepository;
         this.projectMapper = projectMapper;
+        this.updateService = updateService;
     }
     public List<ProjectDto> getAllProjects(){
         List<Project> allProjects = projectRepository.findAll();
@@ -58,5 +61,19 @@ public class ProjectService {
 
 
         return projectRepository.save(project);
+    }
+    public ProjectDto changeProjectOwner(UUID projectId, UpdateProjectRequest request){
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        User newOwner = userRepository.findById(request.ownerId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Team newTeam = teamRepository.findById(newOwner.getTeam().getId())
+                .orElseThrow(() -> new RuntimeException("Team not found"));
+        project.setOwner(newOwner);
+        project.setTeam(newTeam);
+        Project saved = projectRepository.save(project);
+
+        updateService.broadcast(saved);
+        return projectMapper.toDto(saved);
     }
 }

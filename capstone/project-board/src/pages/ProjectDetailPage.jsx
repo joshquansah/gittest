@@ -21,11 +21,11 @@ import {
   replaceTaskInProject,
   summarizeProject,
 } from "../utils/projectData";
-
+import logo from '../assets/connect-logo.png'; 
 const SIDEBAR_LINKS = [
   { to: "/", label: "Projects" },
   { to: "/rollup", label: "Rollup" },
-  { to: "/admin", label: "Admin" },
+  { to: "/profile", label: "Profile" },
 ];
 
 function Sidebar({ user }) {
@@ -34,7 +34,9 @@ function Sidebar({ user }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <div className="sidebar-logo">EC</div>
+        <div className="sidebar-logo">
+            <img src={logo} alt="EverBank Connect Logo" width="50" height="50" />
+        </div>
         <div>
           <strong>EverBank Connect</strong>
           <span>Internal delivery space</span>
@@ -108,6 +110,11 @@ function emptyDraft() {
     owner: "",
   };
 }
+function emptyHandoffForm() {
+  return {
+    owner: "",
+  };
+}
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams();
@@ -120,8 +127,12 @@ export default function ProjectDetailPage() {
   const [activeTask, setActiveTask] = useState(null);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
+  const [showHandoffForm, setShowHandoffForm] = useState(false);
   const [draft, setDraft] = useState(() => emptyDraft());
+  const [handoffForm, setHandoffForm] = useState(() => emptyHandoffForm());
   const [savingTask, setSavingTask] = useState(false);
+  const [handingOff, setHandingOff] = useState(false);
+  const [allMembers, setAllMembers] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
@@ -161,6 +172,7 @@ export default function ProjectDetailPage() {
     async function fetchTeamMembers() {
       try {
         const members = await request("GET", `${BOARD_BASE_URL}/users/team/${project.team.id}`);
+        console.log("teamMembers", members);
         setTeamMembers(members);
       } catch (err) {
         console.error("Failed to fetch team members", err);
@@ -168,6 +180,22 @@ export default function ProjectDetailPage() {
     }
 
     fetchTeamMembers();
+  }, [project?.team?.id]);
+
+    useEffect(() => {
+    if (!project?.team?.id) return;
+    
+    async function fetchAllMembers() {
+      try {
+        const members = await request("GET", `${BOARD_BASE_URL}/users`);
+        console.log("allMembers", members)
+        setAllMembers(members);
+      } catch (err) {
+        console.error("Failed to fetch all members", err);
+      }
+    }
+
+    fetchAllMembers();
   }, [project?.team?.id]);
 
   useEffect(() => {
@@ -281,7 +309,34 @@ export default function ProjectDetailPage() {
       setSavingTask(false);
     }
   }
+async function handleHandoff(event) {
+    event.preventDefault();
+    
+    if (!project) return;
+    
 
+    setHandingOff(true);
+    setError("");
+
+    try {
+
+      const response = await request("PATCH", `${BOARD_BASE_URL}/projects/${projectId}`, {
+        ...project, ownerId: handoffForm.ownerId,
+      });
+      console.log("response", response);
+      const handedOff = response?.project || response;
+      if (handedOff) {
+        setProject((currentProject) => normalizeProject(handedOff));
+      }
+      setHandoffForm(emptyHandoffForm());
+      setShowHandoffForm(false);
+    } catch (err) {
+      setHandingOff(false);
+      setError(err.message || "Failed to handoff");
+    } finally {
+      setHandingOff(false);
+    }
+  }
   const projectTitle = project?.title || "Project";
   const projectStats = summary;
 
@@ -350,11 +405,15 @@ export default function ProjectDetailPage() {
                 </div>
               </section>
 
-              <div className="project-detail-actions">
+{ project.team.id === user.team.id && (<div className="project-detail-actions">
                 <button type="button" className="btn-primary" onClick={() => setShowAddTaskForm((value) => !value)}>
                   {showAddTaskForm ? "Close task form" : "Add task"}
                 </button>
-              </div>
+                <button type="button" className="btn-primary" onClick={() => setShowHandoffForm((value) => !value)}>
+                  {showHandoffForm ? "Close handoff form" : "Handoff"}
+                </button>
+              </div>)}
+             
 
               {showAddTaskForm && (
                 <section className="profile-card add-task-card">
@@ -425,6 +484,31 @@ export default function ProjectDetailPage() {
                     </label>
                     <button type="submit" className="btn-primary" disabled={savingTask || !draft.title.trim()}>
                       {savingTask ? "Creating…" : "Create task"}
+                    </button>
+                  </form>
+                </section>
+              )}
+              {showHandoffForm && (
+                <section className="profile-card add-task-card">
+                  <h2>Hand Off project</h2>
+                  <form className="handoff-form" onSubmit={handleHandoff}>
+                    <label>
+                      New Owner
+                        <select
+                          value={handoffForm.ownerId}
+                          onChange={(e) => setHandoffForm(curr => ({ ...curr, ownerId: e.target.value }))}
+                          disabled={handingOff}
+                        >
+                          <option value="">Select owner</option>
+                          {allMembers.map(member => (
+                            <option key={member.id} value={member.id}>
+                              {member.username === project?.owner?.username ? `${member.username} (Current)` : member.username}
+                            </option>
+                          ))}
+                        </select>
+                    </label>
+                    <button type="submit" className="btn-primary" disabled={handingOff || !handoffForm.ownerId}>
+                      {handingOff ? "Handing Off…" : "Hand Off project"}
                     </button>
                   </form>
                 </section>

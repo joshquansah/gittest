@@ -2,6 +2,7 @@ package com.boardapp.boardapp.controllers;
 
 import com.boardapp.boardapp.dto.CreateProjectRequest;
 import com.boardapp.boardapp.dto.ProjectDto;
+import com.boardapp.boardapp.dto.UpdateProjectRequest;
 import com.boardapp.boardapp.entities.Project;
 import com.boardapp.boardapp.repositories.ProjectRepository;
 import com.boardapp.boardapp.services.ProjectService;
@@ -30,6 +31,13 @@ public class ProjectController {
             @PathVariable UUID projectId
     ){
         return projectService.getProject(projectId);
+    }
+    @PatchMapping("/{projectId}")
+    public ProjectDto handoffProject(
+            @PathVariable UUID projectId,
+            @RequestBody UpdateProjectRequest updateProjectRequest
+            ){
+        return projectService.changeProjectOwner(projectId, updateProjectRequest);
     }
     @PostMapping
     public ResponseEntity<Project> addProject(
